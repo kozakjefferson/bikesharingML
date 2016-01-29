@@ -1,34 +1,38 @@
-from sklearn import svm
+from sklearn import cross_validation
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.feature_selection import SelectFromModel
+
 import data as dt
 
 
-class Prediction(object):
+class Predictor(object):
 
-    clf = svm.SVR()
-    data = dt.Data("data")
+    data_folder = dt.Data("data")
 
-    def __init__(self, train, test):
-        A = self.data.preprocess(train)
-        B = self.data.preprocess(test)
-        self.X = self.data.truncate(A, [0, 3, 4, 5, 6, 7])
-        self.y = A[:, A.shape[1]-1]
-        self.test = self.data.truncate(B, [0, 3, 4, 5, 6, 7])
+    def __init__(self, dataset, predict):
+        A = self.data_folder.preprocess(dataset)
+        B = self.data_folder.preprocess(predict)
+        self.data = A[:, :-1]
+        self.predict = B[:-1]
+        self.target = A[:, A.shape[1]-1]
 
-        #print self.X.shape, self.y.shape, self.test.shape
 
-    def svm_train(self):
-        self.clf.fit(self.X, self.y)
+        rfc = RandomForestRegressor()
 
-    def svm_predict(self, test):
-        with open('result.csv', 'a') as f:
-            f.write('datetime,count\n')
-            dates = self.data.get_dates(test)
-            for index, sample in enumerate(self.test):
-                prediction = self.clf.predict(sample.reshape(1, -1))
-                f.write(dates[index-1] + ', ' + str(prediction[0]) + '\n')
+        clf = rfc.fit(self.data, self.target)
+        print clf.feature_importances_
+        model = SelectFromModel(clf, threshold="0.2*mean", prefit=True)
+        self.data = model.transform(self.data)
+        print self.data
+
+        k_fold = cross_validation.KFold(len(self.data), n_folds=10)
+
+        scores = [rfc.fit(self.data[train], self.target[train]).score(
+            self.data[test], self.target[test]) for train, test in k_fold]
+
+        print scores
 
 
 if __name__ == '__main__':
-    predictor = Prediction("train.csv", "test.csv")
-    predictor.svm_train()
-    predictor.svm_predict("test.csv")
+    predictor = Predictor("train.csv", "test.csv")
+    #predictor.svm_predict("test.csv")

@@ -1,4 +1,6 @@
 import csv
+import datetime
+
 import numpy as np
 
 
@@ -9,7 +11,13 @@ class Data(object):
 
     def csv_str_to_float(self, line):
         float_line = []
-        for item in line[1:]:
+        for i, item in enumerate(line[0:]):
+            if i is 0:
+                date = item.split(" ")[0].split("-")
+                weekday = datetime.date(
+                    int(date[0]), int(date[1]), int(date[2])).weekday()
+                float_line.append(float(weekday))
+                item = item[11:13]
             float_line.append(float(item))
         return float_line
 
@@ -50,6 +58,6 @@ class Data(object):
 
 if __name__ == '__main__':
     data = Data("data")
-    #test = data.preprocess("train.csv")
+    test = data.preprocess("train.csv")
     #data.truncate(test, [0, 3, 4, 5, 6, 7])
-    print data.get_dates("test.csv")
+    #print data.get_dates("test.csv")
