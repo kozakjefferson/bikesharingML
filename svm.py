@@ -1,11 +1,5 @@
-import sys
-
-import numpy as np
-
 from sklearn import svm
-from sklearn import preprocessing
 from sklearn import cross_validation
-from sklearn.cross_validation import KFold
 
 import data as dt
 
@@ -14,50 +8,48 @@ class SVM(object):
 
     data_folder = dt.Data("data")
 
-    def __init__(self, dataset, predict):
-        A = self.data_folder.preprocess(dataset)
-        B = self.data_folder.preprocess(predict)
-        self.data = self.data_folder.truncate(A, [11, 12])
-        self.predict = self.data_folder.truncate(B, [11, 12])
-        self.target = A[:, A.shape[1]-1]
+    def __init__(self, dataset):
+        self.A = self.data_folder.preprocess(dataset)
+        self.predict_original = self.data_folder.preprocess("test.csv")
+        self.predict = self.data_folder.preprocess("test.csv")
+        self.data = self.A[:, :-1]
+        self.target = self.A[:, self.A.shape[1]-1]
+        self.regressor = svm.SVR()
 
-        # self.target
-        # sys.exit(0)
+    def evaluate_with_feature(self, features):
+        X = self.data_folder.truncate(self.A, features)
 
-        #print self.data.shape, self.target.shape
+        print "Selected Features"
+        print "-----------------"
+        print
+        print X
+        print
 
-        # self.data = preprocessing.normalize(self.data, norm='l2')
-        #self.target = preprocessing.normalize(self.target)
+        k_fold = cross_validation.KFold(len(X), n_folds=10)
 
-        # print self.data
-        # print self.target
+        scores = [self.regressor.fit(X[train], self.target[train]).score(
+            X[test], self.target[test]) for train, test in k_fold]
 
-        svr = svm.SVR()
-        self.clf = svr.fit(self.data, self.target)
-        # k_fold = cross_validation.KFold(len(self.data), n_folds=10)
+        print "10-fold cross validation scores"
+        print "-------------------------------"
+        print
+        print scores
+        print
 
-        # scores = [svr.fit(self.data[train], self.target[train]).score(
-        #     self.data[test], self.target[test]) for train, test in k_fold]
+    def train(self):
+        self.regressor.fit(self.data, self.target)
 
-        # print scores
+        return self.regressor
 
-    def svm_learn(self, test):
-        pass
+    def train_with_features(self, features):
+        X = self.data_folder.truncate(self.A, features)
+        self.predict = self.data_folder.truncate(self.predict, features)
 
-    def svm_predict(self, test):
-        for index, sample in enumerate(self.predict):
-            prediction = self.clf.predict(sample.reshape(1, -1))
-            print prediction
+        self.regressor.fit(X, self.target)
 
-        # test_norm = preprocessing.normalize(self.test)
-        # with open('result.csv', 'a') as f:
-        #     f.write('datetime,count\n')
-        #     dates = self.data.get_dates(test)
-        #     for index, sample in enumerate(test_norm):
-        #         prediction = self.clf.predict(sample.reshape(1, -1))
-        #         f.write(dates[index-1] + ', ' + str(prediction[0]) + '\n')
+        return self.regressor
 
 
 if __name__ == '__main__':
-    predictor = SVM("train.csv", "test.csv")
-    predictor.svm_predict("test.csv")
+    predictor = SVM("train.csv")
+    predictor.evaluate_with_feature([0, 1])

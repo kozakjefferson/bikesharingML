@@ -15,7 +15,7 @@ class Data(object):
             if i is 0:
                 date = item.split(" ")[0].split("-")
                 weekday = datetime.date(
-                    int(date[0]), int(date[1]), int(date[2])).weekday()
+                    int(date[0]), int(date[1]), int(date[2])).isoweekday()
                 float_line.append(float(weekday))
                 item = item[11:13]
             if i in [9, 10]:

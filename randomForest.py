@@ -11,6 +11,7 @@ class RandomForest(object):
 
     def __init__(self, dataset):
         self.A = self.data_folder.preprocess(dataset)
+        self.predict_original = self.data_folder.preprocess("test.csv")
         self.predict = self.data_folder.preprocess("test.csv")
         self.data = self.A[:, :-1]
         self.target = self.A[:, self.A.shape[1]-1]
