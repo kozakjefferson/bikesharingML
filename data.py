@@ -18,6 +18,8 @@ class Data(object):
                     int(date[0]), int(date[1]), int(date[2])).weekday()
                 float_line.append(float(weekday))
                 item = item[11:13]
+            if i in [9, 10]:
+                continue
             float_line.append(float(item))
         return float_line
 

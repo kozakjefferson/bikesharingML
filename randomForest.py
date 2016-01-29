@@ -11,7 +11,7 @@ class RandomForest(object):
 
     def __init__(self, dataset):
         self.A = self.data_folder.preprocess(dataset)
-        self.B = self.data_folder.preprocess(predict)
+        self.predict = self.data_folder.preprocess("test.csv")
         self.data = self.A[:, :-1]
         self.target = self.A[:, self.A.shape[1]-1]
 
@@ -63,7 +63,18 @@ class RandomForest(object):
         print scores
         print
 
-    def train(self, features):
+    def train(self):
+        rfc = RandomForestRegressor()
+        rfc.fit(self.data, self.target)
+
+        model = SelectFromModel(rfc, prefit=True)
+        X = model.transform(self.data)
+        self.predict = model.transform(self.predict)
+
+        rfc.fit(X, self.target)
+        return rfc
+
+    def train_with_features(self, features):
         X = self.data_folder.truncate(self.A, features)
 
         rfc = RandomForestRegressor()
