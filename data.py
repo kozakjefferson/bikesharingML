@@ -61,5 +61,3 @@ class Data(object):
 if __name__ == '__main__':
     data = Data("data")
     test = data.preprocess("train.csv")
-    #data.truncate(test, [0, 3, 4, 5, 6, 7])
-    #print data.get_dates("test.csv")

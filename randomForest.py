@@ -21,7 +21,7 @@ class RandomForest(object):
         rfc = RandomForestRegressor()
 
         clf = rfc.fit(self.data, self.target)
-        model = SelectFromModel(clf, threshold="0.2*mean", prefit=True)
+        model = SelectFromModel(clf, threshold="0.5*mean", prefit=True)
         self.data = model.transform(self.data)
 
         print "Selected Features"
